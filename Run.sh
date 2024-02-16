@@ -1,0 +1,4 @@
+
+./Build.sh
+
+./bin/Suduko

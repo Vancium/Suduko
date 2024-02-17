@@ -14,7 +14,6 @@ private:
   std::vector<cell_t> m_State;
   bool m_ValidSuduko = false;
   bool m_CompleteSuduko = false;
-  std::pair<int, int> m_EmptyCell;
 
 private:
   bool ValidRow(int row);
@@ -27,6 +26,7 @@ private:
   int ValidGuess(int row, int col, int guess);
 
 public:
+  int GetCellValue(int x, int y);
   void TestCase1();
   void TestValidCase1();
   void PrintGrid();

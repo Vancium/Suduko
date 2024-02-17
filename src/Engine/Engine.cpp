@@ -1,8 +1,15 @@
 #include "Engine.hpp"
 #include <SDL2/SDL.h>
+#include <SDL2/SDL_pixels.h>
+#include <SDL2/SDL_rect.h>
 #include <SDL2/SDL_render.h>
+#include <SDL2/SDL_surface.h>
+#include <SDL2_ttf/SDL_ttf.h>
+#include <array>
+#include <cstddef>
 #include <iostream>
 #include <memory>
+#include <sys/syslimits.h>
 
 Engine::Engine() {
   // Initialize SDL
@@ -23,6 +30,15 @@ Engine::Engine() {
     std::cout << "Could not create SDL2 renderer" << std::endl;
   }
 
+  TTF_Init();
+
+  m_Font = TTF_OpenFont("/Library/Fonts/Arial Unicode.ttf", 24);
+
+  if (m_Font == NULL) {
+    fprintf(stderr, "error: font not found\n");
+    exit(EXIT_FAILURE);
+  }
+
   // Initialize game
   m_Game = std::make_unique<Suduko>();
 
@@ -38,15 +54,77 @@ Engine::~Engine() { SDL_Quit(); }
 
 void Engine::Render() {
   SDL_RenderClear(m_Renderer);
-  RendererDrawLines();
-
+  DrawLines();
   SDL_SetRenderDrawColor(m_Renderer, m_Theme.background.r, m_Theme.background.g,
                          m_Theme.background.b, m_Theme.background.a);
+  // DrawNumber(0, 0, 1);
+  // SDL_RenderCopy(m_Renderer, m_Texture, NULL, &m_Rect);
+
+  int cellHeight = SCREEN_HEIGHT / m_Game->GRID_SIZE;
+  int cellWidth = SCREEN_WIDTH / m_Game->GRID_SIZE;
+
+  for (int x = 0; x < m_Game->GRID_SIZE; x++) {
+    for (int y = 0; y < m_Game->GRID_SIZE; y++) {
+      DrawNumber(x * cellWidth, y * cellHeight, m_Game->GetCellValue(x, y));
+      SDL_RenderCopy(m_Renderer, m_Texture, NULL, &m_Rect);
+    }
+  }
 
   SDL_RenderPresent(m_Renderer);
 }
 
-void Engine::RendererDrawLines() {
+void Engine::DrawNumber(int x, int y, int val) {
+  SDL_Surface *surface;
+  char *num;
+
+  SDL_Color textColor = {m_Theme.text.r, m_Theme.text.g, m_Theme.text.b,
+                         m_Theme.text.a};
+
+  switch (val) {
+  case 1: {
+    num = "1";
+  } break;
+  case 2: {
+    num = "2";
+  } break;
+  case 3: {
+    num = "3";
+  } break;
+  case 4: {
+    num = "4";
+  } break;
+  case 5: {
+    num = "5";
+  } break;
+  case 6: {
+    num = "6";
+  } break;
+  case 7: {
+    num = "7";
+  } break;
+  case 8: {
+    num = "8";
+  } break;
+  case 9: {
+    num = "9";
+  } break;
+  default:
+    num = "0";
+    break;
+  }
+
+  surface = TTF_RenderText_Solid(m_Font, num, textColor);
+
+  m_Texture = SDL_CreateTextureFromSurface(m_Renderer, surface);
+  SDL_FreeSurface(surface);
+
+  m_Rect.x = x;
+  m_Rect.y = y;
+  m_Rect.w = SCREEN_WIDTH / m_Game->GRID_SIZE;
+  m_Rect.h = SCREEN_HEIGHT / m_Game->GRID_SIZE;
+}
+
+void Engine::DrawLines() {
   int cellWidth = SCREEN_WIDTH / m_Game->GRID_SIZE;
   int cellHeight = SCREEN_HEIGHT / m_Game->GRID_SIZE;
   // Horizontal Lines
@@ -88,13 +166,14 @@ void Engine::PollEvents() {
       m_Running = false;
     } break;
     case SDL_KEYDOWN: {
-      m_Running = false;
+      m_Game->Solve();
     } break;
     }
   }
 }
 
 void Engine::Run() {
+  m_Game->TestCase1();
   while (m_Running) {
     // Handle Events
     PollEvents();

@@ -1,12 +1,11 @@
 #include "Suduko.hpp"
+#include <array>
 #include <cstdio>
 #include <set>
-#include <utility>
 #include <vector>
 
 Suduko::Suduko() {
   m_State = std::vector<cell_t>(GRID_SIZE * GRID_SIZE);
-  m_EmptyCell = std::make_pair(-1, -1);
 
   for (int x = 0; x < GRID_SIZE; x++) {
     for (int y = 0; y < GRID_SIZE; y++) {
@@ -14,6 +13,11 @@ Suduko::Suduko() {
     }
   }
 }
+
+int Suduko::GetCellValue(int x, int y) {
+  return m_State.at(y * GRID_SIZE + x).val;
+}
+
 //  {3, 0, 6, 5, 0, 8, 4, 0, 0},
 void Suduko::TestCase1() {
   int grid[GRID_SIZE][GRID_SIZE] = {
